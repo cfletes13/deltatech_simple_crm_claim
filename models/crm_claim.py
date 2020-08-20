@@ -34,7 +34,8 @@ class crm_case_categ(models.Model):
         """Finds id for case object"""
         object_id = self.env.context.get('object_id', False)
         object_name = self.env.context.get('object_name', False)
-        object_id = self.env['ir.model'].search(['|', ('id', '=', object_id), ('model', '=', object_name)], limit=1)
+        object_id = self.env['ir.model'].search(
+            ['|', ('id', '=', object_id), ('model', '=', object_name)], limit=1)
         return object_id
 
     name = fields.Char('Name', required=True, translate=True)
@@ -94,7 +95,8 @@ class crm_claim(models.Model):
     create_date = fields.Datetime('Creation Date', readonly=True)
     write_date = fields.Datetime('Update Date', readonly=True)
     date_deadline = fields.Date('Deadline')
-    date_closed = fields.Datetime('Closed', readonly=True)
+    date_closed = fields.Datetime('Closed')
+    #date_closed = fields.Datetime('Closed', readonly=True)
     date = fields.Datetime('Claim Date', index=True, defalut=fields.Datetime.now)
 
     ref = fields.Char()
@@ -103,14 +105,16 @@ class crm_claim(models.Model):
 
     categ_id = fields.Many2one('crm.case.categ', 'Category',
                                domain="[('team_id','=',team_id),   ('object_id.model', '=', 'crm.claim')]")
-    priority = fields.Selection([('0', 'Low'), ('1', 'Normal'), ('2', 'High')], 'Priority', default='1')
+    priority = fields.Selection(
+        [('0', 'Low'), ('1', 'Normal'), ('2', 'High')], 'Priority', default='1')
     type_action = fields.Selection([('correction', 'Corrective Action'), ('prevention', 'Preventive Action')],
                                    'Action Type')
-    user_id = fields.Many2one('res.users', 'Responsible', track_visibility='always', default=lambda self: self.env.user.id)
+    user_id = fields.Many2one('res.users', 'Responsible',
+                              track_visibility='always', default=lambda self: self.env.user.id)
     user_fault = fields.Char('Trouble Responsible')
-    team_id = fields.Many2one('crm.team', 'Sales Team', \
-                              index=True, help="Responsible sales team." \
-                                               " Define Responsible user and Email account for" \
+    team_id = fields.Many2one('crm.team', 'Sales Team',
+                              index=True, help="Responsible sales team."
+                                               " Define Responsible user and Email account for"
                                                " mail gateway.")
 
     company_id = fields.Many2one('res.company', 'Company',
@@ -174,7 +178,8 @@ class crm_claim(models.Model):
     @api.multi
     def copy(self, default=None):
         claim = self
-        default = dict(default or {}, stage_id=self._get_default_stage_id(), name=_('%s (copy)') % claim.name)
+        default = dict(default or {}, stage_id=self._get_default_stage_id(),
+                       name=_('%s (copy)') % claim.name)
         return super(crm_claim, self).copy(default)
 
     # -------------------------------------------------------
@@ -211,6 +216,7 @@ class res_partner(models.Model):
     @api.multi
     def _compute_claim_count(self):
         for partner in self:
-            partner.claim_count = self.env['crm.claim'].search_count([('partner_id', '=', partner.id)])
+            partner.claim_count = self.env['crm.claim'].search_count(
+                [('partner_id', '=', partner.id)])
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
